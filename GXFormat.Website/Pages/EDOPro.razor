@@ -1,0 +1,45 @@
+@page "/EDOPro"
+@using GXFormat
+@inject HttpClient Http
+<PageTitle>EDOPro</PageTitle>
+
+<h1>EDOPro</h1>
+
+<p>This page contains information on how to set up EDOPro to play the GX Format.</p>
+<p>You can download the banlist file for EDOPro bellow:</p>
+@if (_formats != null && _formats.Count > 0)
+{
+    <p><a href="@($"data/{_formats[0]}.lflist.conf")" download="@($"{_formats[0]}.lflist.conf")" class="btn btn-primary">Download</a></p>
+}
+<p>
+    Simply place the downloaded file in the "lflist" folder next to your EDOPro executable file. If you installed EDOPro using the default location, it will be found on the following path:
+    <ul>
+        <li>Windows: <b>C:\ProjectIgnis\lflists</b></li>
+        <li>macOS: <b>/Applications/ProjectIgnis/lflists</b></li>
+        <li>Linux: <b>/opt/edopro/lflists</b></li>
+    </ul>
+</p>
+<p>
+    <b>Do note that EDOPro does not support banlists that use duel links like limitted formats, and does not support displaying the Limit 3 symbol</b>,
+    therefore we have used the ban symbol to represent Limit 3 cards. You can use Shift while moving those cards or simply enable the "Ignore Deck edit limitations" option.
+</p>
+<p>
+    When setting up rooms for playing, use the following settings:
+    <ul>
+        <li>Rule: <b>Master Rules (2020)</b></li>
+        <li>Check <b>Don't check Deck contents</b></li>
+        <li>Custom Rule: <b>First turn draw</b></li>
+    </ul>
+</p>
+
+@code
+{
+    private List<string>? _formats;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _formats = await Http.GetFromJsonAsync<List<string>?>("data/formats.json");
+        if (_formats == null || _formats.Count == 0)
+            return;
+    }
+}
