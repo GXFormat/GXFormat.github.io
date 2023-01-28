@@ -1,0 +1,210 @@
+﻿@page "/cardpool"
+@using GXFormat
+@inject HttpClient Http
+@inject CardDatabase Database
+
+<PageTitle>Card Pool</PageTitle>
+
+<h1>Card Pool</h1>
+
+<div style="display: grid; gap: 10px; grid-template-columns: auto;">
+    <div class="grid-container">
+        <div class="flexbox">
+            <div class="flexbox-text">Category:</div>
+            <InputSelect class="flexbox-content" @bind-Value="_searchForm.Category">
+                @foreach (var cardCattegory in _searchForm.GetCategoryEntries())
+                {
+                    <option value="@cardCattegory">@cardCattegory</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="flexbox">
+            <div class="flexbox-text">Sub:</div>
+            <InputSelect class="flexbox-content" @bind-Value="_searchForm.Sub">
+                @foreach (var cardCattegory in _searchForm.GetSubEntries())
+                {
+                    <option value="@cardCattegory">@cardCattegory</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="flexbox">
+            <div class="flexbox-text">Limit:</div>
+            <InputSelect class="flexbox-content" @bind-Value="_searchForm.Limit">
+                <option value="-2">Any</option>
+                <option value="-1">No Limit</option>
+                <option value="1">Limit 1</option>
+                <option value="2">Limit 2</option>
+                <option value="3">Limit 3</option>
+            </InputSelect>
+        </div>
+        <div class="flexbox">
+            <div class="flexbox-text">Level:</div>
+            <InputNumber class="flexbox-content" @bind-Value="_searchForm.Level"/>
+        </div>
+        <div class="flexbox">
+            <div class="flexbox-text">Type:</div>
+            <InputSelect class="flexbox-content" @bind-Value="_searchForm.Type">
+                @foreach (var cardType in Enum.GetValues(typeof(CardType)))
+                {
+                    <option value="@cardType">@cardType</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="flexbox">
+            <div class="flexbox-text">Attribute:</div>
+            <InputSelect class="flexbox-content" @bind-Value="_searchForm.Attribute">
+                @foreach (var cardAttribute in Enum.GetValues(typeof(CardAttribute)))
+                {
+                    <option value="@cardAttribute">@cardAttribute</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+
+    <div class="flexbox">
+        <div class="flexbox-text">Text:</div>
+        <InputText class="flexbox-content" @bind-Value="_searchForm.Text"/>
+    </div>
+
+    <div class="flexbox">
+        <button class="btn btn-primary flexbox-content" @onclick="OnSearch">Search</button>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th class="cardpool-t1">Name</th>
+            <th class="cardpool-t2">Category</th>
+            <th class="cardpool-t3">Attribute</th>
+            <th class="cardpool-t4">LVL</th>
+            <th class="cardpool-t5">Type</th>
+            <th class="cardpool-t6">ATK</th>
+            <th class="cardpool-t7">DEF</th>
+            <th class="cardpool-t8">Limit</th>
+            <th class="cardpool-t9">Card Text</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var (card, limit) in _cards)
+        {
+            <tr>
+                <td class="cardpool-t1">@card.Title</td>
+                <td class="cardpool-t2">@card.Category</td>
+                <td class="cardpool-t3">@card.AttributeString</td>
+                <td class="cardpool-t4">@card.LevelString</td>
+                <td class="cardpool-t5">@card.TypeString</td>
+                <td class="cardpool-t6">@card.AtkString</td>
+                <td class="cardpool-t7">@card.DefString</td>
+                <td class="cardpool-t8">@(limit > 0 ? limit.ToString() : "N/A")</td>
+                <td class="cardpool-t9">@card.Description</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@code
+{
+    private readonly SearchForm _searchForm = new();
+    private readonly GameFormat _gameFormat = new();
+    private readonly List<(Card card, long limit)> _cards = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var formats = await Http.GetFromJsonAsync<List<string>?>("data/formats.json");
+        if (formats == null || formats.Count == 0)
+            return;
+
+        _gameFormat.LoadData(await Http.GetStringAsync($"data/{formats[0]}.lflist.conf"));
+    }
+
+    private void OnSearch()
+    {
+        _cards.Clear();
+
+        foreach (var (cardId, cardLimit) in _gameFormat.CardPool)
+        {
+            if (_searchForm.Limit != -2 && cardLimit != _searchForm.Limit)
+                continue;
+
+            var card = Database.GetCard(cardId);
+
+            if (_searchForm.Category != CardCategory.None && !card.Category.HasFlag(_searchForm.Category))
+                continue;
+
+            if (_searchForm.Sub != CardCategory.None && !card.Category.HasFlag(_searchForm.Sub))
+                continue;
+
+            if (card.Category.HasFlag(CardCategory.Monster))
+            {
+                if (_searchForm.Type != CardType.None && card.Type != _searchForm.Type)
+                    continue;
+
+                if (_searchForm.Attribute != CardAttribute.None && card.Attribute != _searchForm.Attribute)
+                    continue;
+
+                if (_searchForm.Level > 0 && card.Level != _searchForm.Level)
+                    continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(_searchForm.Text) &&
+                !card.Title.Contains(_searchForm.Text, StringComparison.OrdinalIgnoreCase) &&
+                !card.Description.Contains(_searchForm.Text, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            _cards.Add((card, cardLimit));
+        }
+    }
+
+    class SearchForm
+    {
+        private CardCategory _category;
+
+        public CardCategory Category
+        {
+            get => _category;
+            set
+            {
+                if (_category != value)
+                    Sub = CardCategory.None;
+
+                _category = value;
+            }
+        }
+
+        public CardCategory Sub { get; set; }
+
+        public CardAttribute Attribute { get; set; }
+
+        public CardType Type { get; set; }
+
+        public int Level { get; set; }
+
+        public string Text { get; set; } = "";
+
+        public int Limit { get; set; } = -2;
+
+        public CardCategory[] GetCategoryEntries()
+            => new[] { CardCategory.None, CardCategory.Monster, CardCategory.Spell, CardCategory.Trap };
+
+        public CardCategory[] GetSubEntries() => Category switch
+        {
+            CardCategory.Monster => new[]
+            {
+                CardCategory.None, CardCategory.Normal, CardCategory.Effect,
+                CardCategory.Fusion, CardCategory.Flip, CardCategory.Gemini, CardCategory.Ritual,
+                CardCategory.Toon, CardCategory.Spirit
+            },
+            CardCategory.Spell => new[]
+            {
+                CardCategory.None, CardCategory.Continuous, CardCategory.Equip,
+                CardCategory.Ritual, CardCategory.Field, CardCategory.QuickPlay
+            },
+            CardCategory.Trap => new[]
+            {
+                CardCategory.None, CardCategory.Continuous, CardCategory.Counter
+            },
+            _ => new[] { CardCategory.None }
+        };
+    }
+}
