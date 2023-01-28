@@ -25,18 +25,26 @@ for (int i = -1; i <= 3; i++)
     gameFormat.LoadExtraCards(i, ydkFilePath);
 }
 
-var formatName = $"GX Format {DateTime.Now.ToString("yyyy.MM.dd")}";
-var formatNameFileName = $"GXFormat_{DateTime.Now.ToString("yyyy.MM.dd")}";
+#if DEBUG
+var date = "2099.01.01";
+#else
+var date = DateTime.Now.ToString("yyyy.MM.dd");
+#endif
+
+var formatName = $"GX Format {date}";
+var formatNameFileName = $"GXFormat_{date}";
 var outputPath = Path.Combine(outDir, $"{formatNameFileName}.lflist.conf");
 gameFormat.Save(formatName, outputPath);
-
-// Save all the information about the banlist for the website
-
-Console.WriteLine("Generating carddatabase json...");
 
 var dataDir = Path.Combine(baseDir, "../../../../GXFormat.Website/wwwroot/data");
 if (!Directory.Exists(dataDir))
     throw new Exception("Directory does not exist!!!");
+
+File.Copy(outputPath, Path.Combine(dataDir, Path.GetFileName(outputPath)), true);
+
+// Save all the information about the banlist for the website
+
+Console.WriteLine("Generating carddatabase json...");
 
 var lflistFiles = Directory.GetFiles(dataDir, "*.lflist.conf");
 var cardDatabaseGameFormat = new GameFormat();
@@ -44,7 +52,7 @@ cardDatabaseGameFormat.Load(baseLflistFilePath, true);
 foreach (var lflistFile in lflistFiles)
     cardDatabaseGameFormat.Load(lflistFile, true);
 
-var cardDatabasePaths = Directory.GetFiles("../../../../ThirdParty/DeltaUtopia/", "*.cdb");
+var cardDatabasePaths = Directory.GetFiles(Path.Combine(baseDir, "../../../../ThirdParty/DeltaUtopia/"), "*.cdb");
 var cardDatabase = new CardDatabase(cardDatabasePaths);
 var cards = cardDatabase.GetCards(cardDatabaseGameFormat);
 
@@ -65,8 +73,6 @@ File.Copy(outputMetadataPath, Path.Combine(dataDir, "carddatabase.json"), true);
 // Regenerate the formats file as its easier to do it from here
 
 Console.WriteLine("Generating formats json...");
-
-File.Copy(outputPath, Path.Combine(dataDir, "GXFormat_2099.01.01.lflist.conf"), true);
 
 var formats = new List<string>();
 foreach (var filePath in lflistFiles)
