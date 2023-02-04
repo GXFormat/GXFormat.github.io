@@ -63,7 +63,7 @@
 
     <div class="flexbox">
         <div class="flexbox-text">Text:</div>
-        <InputText class="flexbox-content" @bind-Value="_searchForm.Text"/>
+        <InputText class="flexbox-content" @bind-Value="_searchForm.Text" />
     </div>
 
     <div class="flexbox">
@@ -135,6 +135,17 @@
             <p/>
         }
     }
+    else
+    {
+        @if (_loaded)
+        {
+            <p>No results found :(</p>
+        }
+        else
+        {
+            <p>Loading...</p>
+        }
+    }
 </div>
 
 @code
@@ -144,6 +155,7 @@
     private readonly List<(Card card, long limit)> _cards = new();
     private int _displayCount = 0;
     private CardSort _sortOrder = CardSort.LevelDescending;
+    private bool _loaded;
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,6 +164,8 @@
             return;
 
         _gameFormat.LoadData(await Http.GetStringAsync($"data/{formats[0]}.lflist.conf"));
+        OnSearch();
+        _loaded = true;
     }
 
     private void SetSortOrder(CardSort sortOrder)
