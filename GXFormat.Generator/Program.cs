@@ -77,4 +77,5 @@ Console.WriteLine("Generating formats json...");
 var formats = new List<string>();
 foreach (var filePath in lflistFiles)
     formats.Add(Path.GetFileName(filePath).Replace(".lflist.conf", ""));
+formats.Sort((s1, s2) => string.Compare(s2, s1, StringComparison.Ordinal));
 File.WriteAllText(Path.Combine(dataDir, "formats.json"), JsonSerializer.Serialize(formats));
