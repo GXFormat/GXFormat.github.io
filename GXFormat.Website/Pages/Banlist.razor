@@ -6,6 +6,7 @@
 <PageTitle>Banlist</PageTitle>
 
 <h1>Banlist</h1>
+
 @if (_formats == null || _formats.Count == 0)
 {
     <p>
@@ -14,39 +15,44 @@
 }
 else
 {
-    <div style="margin: 10px 0;">
-        <InputSelect ValueExpression="@(()=>_selectedBanList)" Value="@_selectedBanList" ValueChanged="@((int value) => LoadBanlistAsync(value))">
-            @for (int i = 0; i < _formats.Count; i++)
-            {
-                <option value="@i">@_formats[i]</option>
-            }
-        </InputSelect>
-    </div>
-    
-    @foreach(var (limit, title) in _limits)
-    {
-        @if (_banlist.TryGetValue(limit, out var cards))
-        {
-            <h5>@title</h5>
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th class="col-remarks">Remarks</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var (card, oldLimit) in cards)
+    <div style="display: grid; gap: 10px; grid-template-columns: auto;">
+        <div class="flexbox" style="gap: 4px;">
+            <InputSelect class="flexbox-content" ValueExpression="@(()=>_selectedBanList)" Value="@_selectedBanList" ValueChanged="@((int value) => LoadBanlistAsync(value))">
+                @for (int i = 0; i < _formats.Count; i++)
                 {
-                    <tr class="tr-category-@card.Category.GetScore()">
-                        <td>@card.Title</td>
-                        <td class="col-remarks">@(oldLimit == limit ? "" : _oldlimits[oldLimit])</td>
-                    </tr>
+                    <option value="@i">@_formats[i]</option>
                 }
-                </tbody>
-            </table>
+            </InputSelect>
+            <a href="@($"data/{_formats[_selectedBanList]}.lflist.conf")" download="@($"{_formats[_selectedBanList]}.lflist.conf")" class="btn btn-primary">Download</a>
+        </div>
+        
+        @foreach(var (limit, title) in _limits)
+        {
+            @if (_banlist.TryGetValue(limit, out var cards))
+            {
+                <div>
+                    <h5>@title</h5>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="col-remarks">Remarks</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var (card, oldLimit) in cards)
+                        {
+                            <tr class="tr-category-@card.Category.GetScore()">
+                                <td>@card.Title</td>
+                                <td class="col-remarks">@(oldLimit == limit ? "" : _oldlimits[oldLimit])</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
         }
-    }
+    </div>
 }
 
 @code
