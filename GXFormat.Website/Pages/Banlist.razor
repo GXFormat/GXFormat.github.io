@@ -16,8 +16,9 @@
 else
 {
     <div style="display: grid; gap: 10px; grid-template-columns: auto;">
+        
         <div class="flexbox" style="gap: 4px;">
-            <InputSelect class="flexbox-content" ValueExpression="@(()=>_selectedBanList)" Value="@_selectedBanList" ValueChanged="@((int value) => LoadBanlistAsync(value))">
+            <InputSelect class="flexbox-content" ValueExpression="@(() => _selectedBanList)" Value="@_selectedBanList" ValueChanged="@((int value) => LoadBanlistAsync(value))">
                 @for (int i = 0; i < _formats.Count; i++)
                 {
                     <option value="@i">@_formats[i]</option>
@@ -25,10 +26,15 @@ else
             </InputSelect>
             <a href="@($"data/{_formats[_selectedBanList]}.lflist.conf")" download="@($"{_formats[_selectedBanList]}.lflist.conf")" class="btn btn-primary">Download</a>
         </div>
-        
-        @foreach(var (limit, title) in _limits)
+
+        <div class="flexbox" style="gap: 4px;">
+            <InputCheckbox ValueExpression="@(() => _showOnlyTheChanges)" Value="@_showOnlyTheChanges" ValueChanged="@RefreshBanlist"/>
+            <div class="flexbox-content">Show only the changes</div>
+        </div>
+
+        @foreach (var (limit, title) in _limits)
         {
-            @if (_banlist.TryGetValue(limit, out var cards))
+            @if (_banlist.TryGetValue(limit, out var cards) && ShowGroup(limit, cards))
             {
                 <div>
                     <h5>@title</h5>
@@ -42,10 +48,13 @@ else
                         <tbody>
                         @foreach (var (card, oldLimit) in cards)
                         {
-                            <tr class="tr-category-@card.Category.GetScore()">
-                                <td>@card.Title</td>
-                                <td class="col-remarks">@(oldLimit == limit ? "" : _oldlimits[oldLimit])</td>
-                            </tr>
+                            @if (!_showOnlyTheChanges || (_showOnlyTheChanges && oldLimit != limit))
+                            {
+                                <tr class="tr-category-@card.Category.GetScore()">
+                                    <td>@card.Title</td>
+                                    <td class="col-remarks">@(oldLimit == limit ? "" : _oldlimits[oldLimit])</td>
+                                </tr>
+                            }
                         }
                         </tbody>
                     </table>
@@ -79,6 +88,15 @@ else
     private readonly Dictionary<int, List<(Card card, int oldLimit)>> _banlist = new();
     private List<string>? _formats;
     private int _selectedBanList;
+    private bool _showOnlyTheChanges;
+
+    private bool ShowGroup(int limit, List<(Card card, int oldLimit)> cards)
+    {
+        if (!_showOnlyTheChanges)
+            return true;
+
+        return cards.FindIndex(match => match.oldLimit != limit) != -1;
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,6 +107,11 @@ else
         _selectedBanList = 0;
         
         await LoadBanlistAsync(_selectedBanList);
+    }
+
+    private void RefreshBanlist(bool value)
+    {
+        _showOnlyTheChanges = value;
     }
 
     private async Task LoadBanlistAsync(int index)
