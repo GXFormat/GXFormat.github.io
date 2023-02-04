@@ -73,8 +73,7 @@
     @if (_cards.Count > 0)
     {
         <div class="flexbox">
-            <div class="flexbox-content">
-                <h3>Cards</h3></div>
+            <div class="flexbox-content"><h3 style="margin: auto 0;">Cards</h3></div>
             <div style="margin: auto 5px;">Sort:</div>
             <InputSelect style="width: 150px" ValueExpression="@(() => _sortOrder)" Value="@_sortOrder" ValueChanged="@((CardSort value) => SetSortOrder(value))">
                 <option value="@CardSort.NameDescending">Name &#8595;</option>
