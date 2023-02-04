@@ -5,6 +5,10 @@ html, body {
     background-color: #cfbfaf;
 }
 
+.table {
+    border-color: black;
+}
+
 h1:focus {
     outline: none;
 }
@@ -117,4 +121,13 @@ a, .btn-link {
     flex-grow: 1;
 }
 
+.flexbox {
+    display: flex;
+}
+
+.flexbox-text {
+    width: 80px;
+    text-align: left;
+    margin: auto;
+}
 

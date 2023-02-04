@@ -24,17 +24,23 @@ th[b-5v6mi0smc1]
 
 .tr-category-2[b-5v6mi0smc1]
 {
-    background-color: #A086B7;
+    background-color: #FF8B53;
     color: black;
 }
 
 .tr-category-3[b-5v6mi0smc1]
 {
-    background-color: #1D9E74;
+    background-color: #A086B7;
     color: black;
 }
 
 .tr-category-4[b-5v6mi0smc1]
+{
+    background-color: #1D9E74;
+    color: black;
+}
+
+.tr-category-5[b-5v6mi0smc1]
 {
     background-color: #BC5A84;
     color: black;
@@ -48,16 +54,6 @@ th[b-5v6mi0smc1]
 
 .grid-container > div[b-e6ygwhfv4h] {
     text-align: center;
-}
-
-.flexbox[b-e6ygwhfv4h] {
-    display: flex;
-}
-
-.flexbox-text[b-e6ygwhfv4h] {
-    width: 80px;
-    text-align: left;
-    margin: auto;
 }
 
 @media screen and (min-width: 1400px) {
