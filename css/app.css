@@ -142,6 +142,10 @@ input {
     border-color: #666666;
 }
 
+input:checked {
+    background-color: #4d2600;
+}
+
 .flexbox-content {
     flex-grow: 1;
     height: 100%;
