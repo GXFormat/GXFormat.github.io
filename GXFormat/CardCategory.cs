@@ -41,15 +41,14 @@ public static class CardCategoryExtensions
     public static int GetScore(this CardCategory category)
     {
         if (category.IsMainDeckMonster())
-            return 1;
+            return category.HasFlag(CardCategory.Normal) ? 1 : 2;
         
         if (category.HasFlag(CardCategory.Fusion))
-            return 2;
-        
-        if (category.HasFlag(CardCategory.Spell))
             return 3;
+
+        if (category.HasFlag(CardCategory.Spell))
+            return 4;
         
-        return 4;
+        return 5;
     }
-    
 }

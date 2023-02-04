@@ -5,6 +5,10 @@ html, body {
     background-color: #cfbfaf;
 }
 
+.table {
+    border-color: black;
+}
+
 h1:focus {
     outline: none;
 }

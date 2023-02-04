@@ -23,17 +23,23 @@ th
 
 .tr-category-2
 {
-    background-color: #A086B7;
+    background-color: #FF8B53;
     color: black;
 }
 
 .tr-category-3
 {
-    background-color: #1D9E74;
+    background-color: #A086B7;
     color: black;
 }
 
 .tr-category-4
+{
+    background-color: #1D9E74;
+    color: black;
+}
+
+.tr-category-5
 {
     background-color: #BC5A84;
     color: black;

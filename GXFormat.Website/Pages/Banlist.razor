@@ -144,17 +144,6 @@ else
         
         // Sort lists
         foreach (var (_, cards) in _banlist)
-        {
-            cards.Sort((s1, s2) =>
-            {
-                var s1Category = s1.card.Category.GetScore();
-                var s2Category = s2.card.Category.GetScore();
-
-                if (s1Category != s2Category)
-                    return s1Category - s2Category;
-
-                return string.Compare(s1.card.Title, s2.card.Title, StringComparison.Ordinal);
-            });
-        }
+            cards.SortCards(CardSort.CategoryDescending, item => item.card);
     }
 }

@@ -70,37 +70,72 @@
         <button class="btn btn-primary flexbox-content" @onclick="OnSearch">Search</button>
     </div>
 
-    <table class="table">
-        <thead>
-        <tr>
-            <th class="cardpool-t1">Name</th>
-            <th class="cardpool-t2">Category</th>
-            <th class="cardpool-t3">Attribute</th>
-            <th class="cardpool-t4">LVL</th>
-            <th class="cardpool-t5">Type</th>
-            <th class="cardpool-t6">ATK</th>
-            <th class="cardpool-t7">DEF</th>
-            <th class="cardpool-t8">Limit</th>
-            <th class="cardpool-t9">Card Text</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var (card, limit) in _cards)
-        {
+    @if (_cards.Count > 0)
+    {
+        <div class="flexbox">
+            <div class="flexbox-content">
+                <h3>Cards</h3></div>
+            <div style="margin: auto 5px;">Sort:</div>
+            <InputSelect style="width: 150px" ValueExpression="@(() => _sortOrder)" Value="@_sortOrder" ValueChanged="@((CardSort value) => SetSortOrder(value))">
+                <option value="@CardSort.NameDescending">Name &#8595;</option>
+                <option value="@CardSort.NameAscending">Name &#8593;</option>
+                <option value="@CardSort.LevelDescending">Level &#8595;</option>
+                <option value="@CardSort.LevelAscending">Level &#8593;</option>
+                <option value="@CardSort.AtkDescending">Atk &#8595;</option>
+                <option value="@CardSort.AtkAscending">Atk &#8593;</option>
+                <option value="@CardSort.DefDescending">Def &#8595;</option>
+                <option value="@CardSort.DefAscending">Def &#8593;</option>
+            </InputSelect>
+        </div>
+
+        <table class="table">
+            <thead>
             <tr>
-                <td class="cardpool-t1">@card.Title</td>
-                <td class="cardpool-t2">@card.Category</td>
-                <td class="cardpool-t3">@card.AttributeString</td>
-                <td class="cardpool-t4">@card.LevelString</td>
-                <td class="cardpool-t5">@card.TypeString</td>
-                <td class="cardpool-t6">@card.AtkString</td>
-                <td class="cardpool-t7">@card.DefString</td>
-                <td class="cardpool-t8">@(limit > 0 ? limit.ToString() : "N/A")</td>
-                <td class="cardpool-t9">@card.Description</td>
+                <th></th>
+                <th class="cardpool-t1">Name</th>
+                <th class="cardpool-t2">Category</th>
+                <th class="cardpool-t3">Attribute</th>
+                <th class="cardpool-t4">LVL</th>
+                <th class="cardpool-t5">Type</th>
+                <th class="cardpool-t6">ATK</th>
+                <th class="cardpool-t7">DEF</th>
+                <th class="cardpool-t8">Limit</th>
+                <th class="cardpool-t9">Card Text</th>
             </tr>
+            </thead>
+            <tbody>
+            @for (var index = 0; index < Math.Min(_displayCount, _cards.Count); index++)
+            {
+                var (card, limit) = _cards[index];
+                <tr>
+                    <td>
+                        <img src="https://images.ygoprodeck.com/images/cards_small/@(card.GetYgoProDeckCardID()).jpg" width="42" height="62"/>
+                    </td>
+                    <td class="cardpool-t1">
+                        <a href="https://ygoprodeck.com/card/?search=@card.GetYgoProDeckCardID()"> @card.Title</a>
+                    </td>
+                    <td class="cardpool-t2">@card.Category</td>
+                    <td class="cardpool-t3">@card.AttributeString</td>
+                    <td class="cardpool-t4">@card.LevelString</td>
+                    <td class="cardpool-t5">@card.TypeString</td>
+                    <td class="cardpool-t6">@card.AtkString</td>
+                    <td class="cardpool-t7">@card.DefString</td>
+                    <td class="cardpool-t8">@(limit > 0 ? limit.ToString() : "N/A")</td>
+                    <td class="cardpool-t9">@card.Description</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+
+
+        @if (_cards.Count > _displayCount)
+        {
+            <div class="flexbox">
+                <button class="btn btn-primary flexbox-content" @onclick="OnLoadMore">+ Load More</button>
+            </div>
+            <p/>
         }
-        </tbody>
-    </table>
+    }
 </div>
 
 @code
@@ -108,6 +143,8 @@
     private readonly SearchForm _searchForm = new();
     private readonly GameFormat _gameFormat = new();
     private readonly List<(Card card, long limit)> _cards = new();
+    private int _displayCount = 0;
+    private CardSort _sortOrder = CardSort.LevelDescending;
 
     protected override async Task OnInitializedAsync()
     {
@@ -118,9 +155,17 @@
         _gameFormat.LoadData(await Http.GetStringAsync($"data/{formats[0]}.lflist.conf"));
     }
 
+    private void SetSortOrder(CardSort sortOrder)
+    {
+        _sortOrder = sortOrder;
+        _cards.SortCards(_sortOrder, item => item.card);
+    }
+
     private void OnSearch()
     {
         _cards.Clear();
+        _displayCount = 0;
+        OnLoadMore();
 
         foreach (var (cardId, cardLimit) in _gameFormat.CardPool)
         {
@@ -128,6 +173,9 @@
                 continue;
 
             var card = Database.GetCard(cardId);
+            
+            if (card.Category.HasFlag(CardCategory.Token))
+                continue;
 
             if (_searchForm.Category != CardCategory.None && !card.Category.HasFlag(_searchForm.Category))
                 continue;
@@ -154,6 +202,13 @@
 
             _cards.Add((card, cardLimit));
         }
+        
+        SetSortOrder(_sortOrder);
+    }
+
+    private void OnLoadMore()
+    {
+        _displayCount += 30;
     }
 
     class SearchForm
