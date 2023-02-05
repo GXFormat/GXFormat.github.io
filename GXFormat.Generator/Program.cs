@@ -1,19 +1,17 @@
 ﻿using System.Text.Json;
 using GXFormat;
 
-// Clear existing output
 var baseDir = AppDomain.CurrentDomain.BaseDirectory.ToString();
-var outDir = Path.Combine(baseDir, "data");
+var resourcesDir = Path.Combine(baseDir, "Resources");
 
-if (Directory.Exists(outDir))
-    Directory.Delete(outDir, true);
-Directory.CreateDirectory(outDir);
+var dataDir = Path.Combine(baseDir, "../../../../GXFormat.Website/wwwroot/data");
+if (!Directory.Exists(dataDir))
+    throw new Exception("Directory does not exist!!!");
 
 // Generate the banlist
 
 Console.WriteLine("Generating edopro banlist file...");
 
-var resourcesDir = Path.Combine(baseDir, "Resources");
 var gameFormat = new GameFormat();
 
 var baseLflistFilePath = Path.Combine(resourcesDir, "GXFormat_Base.lflist.conf");
@@ -25,6 +23,10 @@ for (int i = -1; i <= 3; i++)
     gameFormat.LoadExtraCards(i, ydkFilePath);
 }
 
+var debugFilePath = Path.Combine(dataDir, $"GXFormat_2099.01.01.lflist.conf");
+if (File.Exists(debugFilePath))
+    File.Delete(debugFilePath);
+
 #if DEBUG
 var date = "2099.01.01";
 #else
@@ -32,15 +34,8 @@ var date = DateTime.Now.ToString("yyyy.MM.dd");
 #endif
 
 var formatName = $"GX Format {date}";
-var formatNameFileName = $"GXFormat_{date}";
-var outputPath = Path.Combine(outDir, $"{formatNameFileName}.lflist.conf");
+var outputPath = Path.Combine(dataDir, $"GXFormat_{date}.lflist.conf");
 gameFormat.Save(formatName, outputPath);
-
-var dataDir = Path.Combine(baseDir, "../../../../GXFormat.Website/wwwroot/data");
-if (!Directory.Exists(dataDir))
-    throw new Exception("Directory does not exist!!!");
-
-File.Copy(outputPath, Path.Combine(dataDir, Path.GetFileName(outputPath)), true);
 
 // Save all the information about the banlist for the website
 
@@ -64,11 +59,10 @@ foreach (var (cardId, card) in cards)
     }
 }
 
-var outputMetadataPath = Path.Combine(outDir, $"carddatabase.json");
+var outputMetadataPath = Path.Combine(dataDir, $"carddatabase.json");
 var outputMetadataData = JsonSerializer.Serialize(cards, new JsonSerializerOptions() { IgnoreReadOnlyProperties = true });
 
 File.WriteAllText(outputMetadataPath, outputMetadataData);
-File.Copy(outputMetadataPath, Path.Combine(dataDir, "carddatabase.json"), true);
 
 // Regenerate the formats file as its easier to do it from here
 

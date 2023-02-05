@@ -26,4 +26,8 @@
     <Content Remove="wwwroot\data\GXFormat_2099.01.01.lflist.conf" />
   </ItemGroup>
 
+  <Target Name="GenerateCards" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet run --project $(ProjectDir)../GXFormat.Generator/GXFormat.Generator.csproj --configuration $(Configuration)" />
+  </Target>
+
 </Project>
