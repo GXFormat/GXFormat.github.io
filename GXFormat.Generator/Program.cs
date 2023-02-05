@@ -2,7 +2,7 @@
 using GXFormat;
 
 var baseDir = AppDomain.CurrentDomain.BaseDirectory.ToString();
-var resourcesDir = Path.Combine(baseDir, "Resources");
+var resourcesDir = Path.Combine(baseDir, "../../../Resources");
 
 var dataDir = Path.Combine(baseDir, "../../../../GXFormat.Website/wwwroot/data");
 if (!Directory.Exists(dataDir))
