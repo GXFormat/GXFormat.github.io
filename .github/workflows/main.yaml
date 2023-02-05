@@ -26,6 +26,9 @@ jobs:
         with:
           dotnet-version: '7.0.x'
 
+      - name: Restore Workloads 🔧 
+        run: dotnet workload restore
+
       - name: Build 🔧 
         run: dotnet publish -c Release GXFormat.Website/GXFormat.Website.csproj
 
