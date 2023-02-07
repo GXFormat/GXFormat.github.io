@@ -22,12 +22,8 @@
     </ProjectReference>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <Content Remove="wwwroot\data\GXFormat_2099.01.01.lflist.conf" />
-  </ItemGroup>
-
-  <Target Name="GenerateBanlist" BeforeTargets="BeforeBuild">
-    <Exec Command="dotnet run --project $(ProjectDir)../GXFormat.Generator/GXFormat.Generator.csproj --configuration $(Configuration)" />
+  <Target Name="GenerateBanlist" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Debug' ">
+    <Exec Command="dotnet run --project $(ProjectDir)../GXFormat.Generator/GXFormat.Generator.csproj" />
   </Target>
 
 </Project>
