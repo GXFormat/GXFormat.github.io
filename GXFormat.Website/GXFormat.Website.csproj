@@ -22,8 +22,8 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Target Name="GenerateBanlist" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Debug' ">
-    <Exec Command="dotnet run --project $(ProjectDir)../GXFormat.Generator/GXFormat.Generator.csproj" />
+  <Target Name="GenerateBanlist" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet run --project $(ProjectDir)../GXFormat.Generator/GXFormat.Generator.csproj --configuration $(Configuration)" />
   </Target>
 
 </Project>
