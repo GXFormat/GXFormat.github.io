@@ -12,10 +12,11 @@ if (!Directory.Exists(dataDir))
 
 Console.WriteLine("Generating edopro banlist file...");
 
-var gameFormat = new GameFormat();
+var baseLflistFilePath = Path.Combine(resourcesDir, "Whitelist 2008.09 GX.lflist.conf");
 
-var baseLflistFilePath = Path.Combine(resourcesDir, "GXFormat_Base.lflist.conf");
+var gameFormat = new GameFormat();
 gameFormat.Load(baseLflistFilePath, true);
+gameFormat.Delete( Path.Combine(resourcesDir, "Whitelist 2005.04 DM.lflist.conf"));
 
 for (int i = -1; i <= 3; i++)
 {

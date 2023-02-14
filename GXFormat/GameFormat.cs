@@ -21,6 +21,24 @@ public class GameFormat
         _cardPool.Clear();
     }
 
+    public void Delete(string filePath)
+    {
+        var fileContents = File.ReadAllText(filePath);
+        DeleteData(fileContents);
+    }
+
+    public void DeleteData(string fileContents)
+    {
+        foreach (var match in LflistRegex.Matches(fileContents).Cast<Match>())
+        {
+            if (long.TryParse(match.Groups["cardId"].ToString(), out var cardId) &&
+                int.TryParse(match.Groups["cardLimit"].ToString(), out var limit))
+            {
+                RemoveCard(cardId);
+            }
+        }
+    }
+
     public void Load(string filePath, bool baseData = false)
     {
         var fileContents = File.ReadAllText(filePath);
