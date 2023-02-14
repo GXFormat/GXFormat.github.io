@@ -19,6 +19,9 @@
 
   <Target Name="CopyOverYdkFiles" BeforeTargets="BeforeBuild" Condition="Exists('$(EDOProPath)')">
     <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit-1.ydk" DestinationFolder="$(ProjectDir)Resources" />
+    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit-2.ydk" DestinationFolder="$(ProjectDir)Resources" />
+    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit-3.ydk" DestinationFolder="$(ProjectDir)Resources" />
+    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit-4.ydk" DestinationFolder="$(ProjectDir)Resources" />
     <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit0.ydk" DestinationFolder="$(ProjectDir)Resources" />
     <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit1.ydk" DestinationFolder="$(ProjectDir)Resources" />
     <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit2.ydk" DestinationFolder="$(ProjectDir)Resources" />

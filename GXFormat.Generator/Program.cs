@@ -18,10 +18,10 @@ var gameFormat = new GameFormat();
 gameFormat.Load(baseLflistFilePath, true);
 gameFormat.Delete( Path.Combine(resourcesDir, "Whitelist 2005.04 DM.lflist.conf"));
 
-for (int i = -1; i <= 3; i++)
+for (int i = -4; i <= 3; i++)
 {
     var ydkFilePath = Path.Combine(resourcesDir, $"GXFormat_Limit{i}.ydk");
-    gameFormat.LoadExtraCards(i, ydkFilePath);
+    gameFormat.LoadExtraCards(Math.Max(-1, i), ydkFilePath);
 }
 
 var debugFilePath = Path.Combine(dataDir, $"GXFormat_2099.01.01.lflist.conf");
