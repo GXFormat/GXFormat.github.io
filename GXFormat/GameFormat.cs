@@ -34,34 +34,9 @@ public class GameFormat
             if (long.TryParse(match.Groups["cardId"].ToString(), out var cardId) &&
                 int.TryParse(match.Groups["cardLimit"].ToString(), out var limit))
             {
-                if (baseData)
+                if (limit > 0)
                 {
-                    if (limit == -1)
-                    {
-                        RemoveCard(cardId);
-                    }
-                    else
-                    {
-                        AddCard(cardId);
-                    }
-                }
-                else
-                {
-                    switch (limit)
-                    {
-                        case -1:
-                            RemoveCard(cardId);
-                            break;
-                        case 0:
-                            AddCard(cardId, 3);
-                            break;
-                        case 3:
-                            AddCard(cardId);
-                            break;
-                        default:
-                            AddCard(cardId, limit);
-                            break;
-                    }
+                    AddCard(cardId, 3);
                 }
             }
         }
@@ -91,31 +66,18 @@ public class GameFormat
 
         foreach (var cardPair in _cardPool)
         {
-            var limit = cardPair.Value;
-
-            if (limit == 3)
-                limit = 0;
-            else if (limit == -1)
-                limit = 3;
-            
-            outputLines.Add($"{cardPair.Key} {limit}");
+            outputLines.Add($"{cardPair.Key} {cardPair.Value}");
         }
 
         File.WriteAllLines(filePath, outputLines);
     }
-
-    public void AddCard(long cardId)
-        => _cardPool[cardId] = -1;
 
     public void RemoveCard(long cardId)
         => _cardPool.Remove(cardId);
 
     public void AddCard(long cardId, int limit)
     {
-        if (limit == 0)
-            RemoveCard(cardId);
-        else
-            _cardPool[cardId] = limit;
+        _cardPool[cardId] = limit;
     }
 }
 

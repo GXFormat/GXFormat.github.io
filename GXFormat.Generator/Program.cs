@@ -2,21 +2,102 @@
 using GXFormat;
 
 var baseDir = AppDomain.CurrentDomain.BaseDirectory.ToString();
-var resourcesDir = Path.Combine(baseDir, "../../../Resources");
+var outputDir = Path.Combine(baseDir, "Output");
+var resourcesDir = Path.Combine(baseDir, "../../../BaseDecks");
+
+#if DEBUG
+var date = "2099.01.01";
+#else
+var date = DateTime.Now.ToString("yyyy.MM.dd");
+#endif
 
 var dataDir = Path.Combine(baseDir, "../../../../GXFormat.Website/wwwroot/data");
 if (!Directory.Exists(dataDir))
     throw new Exception("Directory does not exist!!!");
 
+if (!Directory.Exists(outputDir))
+    Directory.CreateDirectory(outputDir);
+
 // Generate the banlist
 
 Console.WriteLine("Generating edopro banlist file...");
 
-var gameFormat = new GameFormat();
+var basePool = new GameFormat();
 
-var baseLflistFilePath = Path.Combine(resourcesDir, "GXFormat_Base.lflist.conf");
-gameFormat.Load(baseLflistFilePath, true);
+var baseLflistFilePath = Path.Combine(Path.Combine(resourcesDir, "../"), "GXFormat_Base.lflist.conf");
+basePool.Load(baseLflistFilePath, true);
 
+var limitPool = new GameFormat();
+var archtypeLists = new Dictionary<string, GameFormat>();
+
+// Load Limits
+foreach (var fileList in Directory.GetFiles(resourcesDir))
+{
+    var listName = Path.GetFileNameWithoutExtension(fileList);
+
+    if (listName.StartsWith("GXFormat_"))
+    {
+        listName = listName.Substring(9);
+
+        if (int.TryParse(listName, out int limit))
+        {
+            basePool.LoadExtraCards(limit, fileList);
+            limitPool.LoadExtraCards(limit, fileList);
+        }
+    }
+}
+
+// Load Archtypes
+foreach (var fileList in Directory.GetFiles(resourcesDir))
+{
+    var listName = Path.GetFileNameWithoutExtension(fileList);
+
+    if (listName.StartsWith("GXFormat_"))
+    {
+        listName = listName.Substring(9);
+
+        if (!int.TryParse(listName, out int limit))
+        {
+            var archtypeList = new GameFormat();
+            archtypeList.LoadExtraCards(3, fileList);
+            archtypeLists[listName] = archtypeList;
+
+            basePool.LoadExtraCards(0, fileList);
+        }
+    }
+}
+
+// Remove banned cards
+var hashSet = new HashSet<long>();
+foreach (var card in basePool.CardPool)
+    if (card.Value == 0 || card.Value == -1)
+        hashSet.Add(card.Key);
+foreach (var card in hashSet)
+    basePool.RemoveCard(card);
+
+foreach (var apair in archtypeLists)
+{
+    foreach (var bpair in basePool.CardPool)
+    {
+        apair.Value.AddCard(bpair.Key, bpair.Value);
+    }
+
+    foreach (var lpair in limitPool.CardPool)
+    {
+        if (apair.Value.CardPool.ContainsKey(lpair.Key))
+        {
+            if (lpair.Value > 0)
+                apair.Value.AddCard(lpair.Key, lpair.Value);
+            else
+                apair.Value.RemoveCard(lpair.Key);
+        }
+    }
+
+    var archtypeListName = $"GX Format {apair.Key} {date}";
+    apair.Value.Save(archtypeListName, Path.Combine(outputDir, archtypeListName + ".lflist.conf"));
+}
+
+/*
 for (int i = -1; i <= 3; i++)
 {
     var ydkFilePath = Path.Combine(resourcesDir, $"GXFormat_Limit{i}.ydk");
@@ -73,3 +154,4 @@ foreach (var filePath in lflistFiles)
     formats.Add(Path.GetFileName(filePath).Replace(".lflist.conf", ""));
 formats.Sort((s1, s2) => string.Compare(s2, s1, StringComparison.Ordinal));
 File.WriteAllText(Path.Combine(dataDir, "formats.json"), JsonSerializer.Serialize(formats));
+*/

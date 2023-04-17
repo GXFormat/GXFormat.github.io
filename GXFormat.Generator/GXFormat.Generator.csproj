@@ -17,12 +17,4 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.2" />
   </ItemGroup>
 
-  <Target Name="CopyOverYdkFiles" BeforeTargets="BeforeBuild" Condition="Exists('$(EDOProPath)')">
-    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit-1.ydk" DestinationFolder="$(ProjectDir)Resources" />
-    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit0.ydk" DestinationFolder="$(ProjectDir)Resources" />
-    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit1.ydk" DestinationFolder="$(ProjectDir)Resources" />
-    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit2.ydk" DestinationFolder="$(ProjectDir)Resources" />
-    <Copy SourceFiles="$(EDOProPath)/deck/GXFormat_Limit3.ydk" DestinationFolder="$(ProjectDir)Resources" />
-  </Target>
-
 </Project>
