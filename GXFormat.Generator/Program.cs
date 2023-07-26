@@ -1,6 +1,17 @@
 ﻿using System.Text.Json;
 using GXFormat;
 
+var supportedArchtypes = new HashSet<string>
+{
+    "AncientGears",
+    "ArcanaForce",
+    "Cyberdark",
+    "DarkWorld",
+    "GladiatorBeast",
+    "Roid",
+    "Venom"
+};
+
 var baseDir = AppDomain.CurrentDomain.BaseDirectory.ToString();
 var outputDir = Path.Combine(baseDir, "Output");
 var resourcesDir = Path.Combine(baseDir, "../../../BaseDecks");
@@ -26,6 +37,18 @@ var basePool = new GameFormat();
 
 var baseLflistFilePath = Path.Combine(Path.Combine(resourcesDir, "../"), "GXFormat_Base.lflist.conf");
 basePool.Load(baseLflistFilePath, true);
+
+// Delete monster cards
+var cardDatabasePaths = Directory.GetFiles(Path.Combine(baseDir, "../../../../ThirdParty/DeltaUtopia/"), "*.cdb");
+var cardDatabase = new CardDatabase(cardDatabasePaths);
+
+foreach (var card in cardDatabase.GetCards(basePool))
+{
+    if (card.Value.Category.HasFlag(CardCategory.Monster))
+    {
+        basePool.RemoveCard(card.Key);
+    }
+}
 
 var limitPool = new GameFormat();
 var archtypeLists = new Dictionary<string, GameFormat>();
@@ -77,6 +100,11 @@ foreach (var card in hashSet)
 
 foreach (var apair in archtypeLists)
 {
+    if (!supportedArchtypes.Contains(apair.Key))
+    {
+        continue;
+    }
+
     foreach (var bpair in basePool.CardPool)
     {
         apair.Value.AddCard(bpair.Key, bpair.Value);
